@@ -1,24 +1,25 @@
 const proxy = require('http-proxy-middleware');
+const backend = 'secure.gooddata.com';
 
 module.exports = function (app) {
     app.use(proxy("/gdc",  {
         "changeOrigin": true,
         "cookieDomainRewrite": "localhost",
         "secure": false,
-        "target": "https://secure.gooddata.com",
+        "target": `https://${backend}`,
         "headers": {
-            "host": "secure.gooddata.com",
+            "host": backend,
             "origin": null
         }
     }));
     app.use(proxy("/*.html", {
         "changeOrigin": true,
         "secure": false,
-        "target": "https://secure.gooddata.com"
+        "target": `https://${backend}`
     }));
     app.use(proxy("/packages/*.{js,css}", {
         "changeOrigin": true,
         "secure": false,
-        "target": "https://secure.gooddata.com"
+        "target": `https://${backend}`
     }));
 };
