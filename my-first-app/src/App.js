@@ -1,57 +1,57 @@
 import React, { Component } from 'react';
 import '@gooddata/react-components/styles/css/main.css';
 import {
-  Treemap, Visualization
+  AttributeFilter, Visualization
 } from '@gooddata/react-components';
 import './App.css';
-import { Test } from './components/Test';
+
+const projectId = 'x3k4294x4k00lrz5degxnc6nykynhh52';
 
 class App extends Component {
-  render() {
-    const projectId = 'jm8bsdakbhujk1a254h25a6mtd6orn9g';
+  state = {
+    filters: []
+  }
 
-    const measure = {
-      measure: {
-        localIdentifier: 'm1',
-        definition: {
-          measureDefinition: {
-            item: {
-              uri: '/gdc/md/jm8bsdakbhujk1a254h25a6mtd6orn9g/obj/62827'
-            }
-          }
-        }
-      }
-    };
-    const view = {
-      visualizationAttribute: {
+  onApply = (filter) => {
+    console.log('AttributeFilterExample filter', filter);
+    const isPositive = !!filter.in;
+    const elementsProp = isPositive ? 'in' : 'notIn';
+    const filters = [{
+      [isPositive ? 'positiveAttributeFilter' : 'negativeAttributeFilter']: {
         displayForm: {
-          uri: '/gdc/md/jm8bsdakbhujk1a254h25a6mtd6orn9g/obj/324'
+          identifier: filter.id
         },
-        localIdentifier: '02b7736f6bef48b1849798e430d837df'
-      }};
-    const stack = {
-      visualizationAttribute: {
-      displayForm: {
-        uri: '/gdc/md/jm8bsdakbhujk1a254h25a6mtd6orn9g/obj/952'
-      },
-      localIdentifier: 'bc5257e06a9342ec99854bd1a53f3262'
-    }};
+        [elementsProp]: filter[elementsProp].map(element => (`/gdc/md/${projectId}/obj/1251/elements?id=${element}`))
+      }
+    }];
+    this.setState({
+      filters
+    });
+  }
+
+  render() {
+    const {
+      filters
+    } = this.state;
 
     return (
       <div className="App">
         <header className="App-header">
-          <div style={{width: 600, height: 800}}>
-            <Treemap
-              projectId={projectId}
-              measures={[measure]}
-              viewBy={view}
-              segmentBy={stack}
+          <div style={{ height: 400, width: 600 }}>
+            <AttributeFilter
+             identifier={"label.activity.activitytype"}
+             projectId={projectId}
+             fullscreenOnMobile={false}
+             onApply={this.onApply}
             />
           </div>
           <div style={{width: 600, height: 800}}>
-            <Visualization projectId={projectId} uri={'/gdc/md/jm8bsdakbhujk1a254h25a6mtd6orn9g/obj/75599'} />
+            <Visualization
+              projectId={projectId}
+              identifier={'aahiOE6Viy6q'}
+              filters={filters}
+            />
           </div>
-          <Test />
         </header>
       </div>
     );
