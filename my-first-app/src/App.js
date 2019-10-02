@@ -1,59 +1,79 @@
 import React, { Component } from 'react';
 import '@gooddata/react-components/styles/css/main.css';
 import {
-  Treemap, Visualization
+  Visualization
 } from '@gooddata/react-components';
+import { factory as sdkFactory } from '@gooddata/gooddata-js';
 import './App.css';
-import { Test } from './components/Test';
+
+const DOWNLOADER_ID = "downloader";
 
 class App extends Component {
+  constructor(props) {
+    super(props);
+
+    const whiteLabeledDomain = 'zebroids.intgdc.com';
+    this.sdk = sdkFactory({ domain: whiteLabeledDomain }); // this needs to be provided as a prop to the Visualization component in render method
+    this.projectId = 'vty3cz8bskhm8oyaftk98cm4rjsy074o'; // this needs to be project on whitelabeled domain
+    this.visId = '75894'; // this needs to be some chart visualization NOT table!!!
+    // TODO once domain where this app is deployed is enabled for CORS on whitelabeled domain remove any PROXY settings
+
+    this.doExport = this.doExport.bind(this);
+  }
+
+  onExportReady = exportResult => {
+    this.exportResult = exportResult;
+  };
+
+  downloadFile = uri => {
+    let anchor = document.getElementById(DOWNLOADER_ID);
+    if (!anchor) {
+        anchor = document.createElement("a");
+        anchor.id = DOWNLOADER_ID;
+        document.body.appendChild(anchor);
+    }
+    anchor.href = uri;
+    anchor.download = uri;
+    anchor.click();
+  };
+
+  exportToCSV = () => {
+      this.doExport({});
+  };
+
+  async doExport(exportConfig) {
+    try {
+        const result = await this.exportResult(exportConfig);
+        this.setState({ errorMessage: null });
+        this.downloadFile(result.uri);
+    } catch (error) {
+        // error handling
+        console.error(error);
+    }
+  }
+
   render() {
-    const projectId = 'jm8bsdakbhujk1a254h25a6mtd6orn9g';
-
-    const measure = {
-      measure: {
-        localIdentifier: 'm1',
-        definition: {
-          measureDefinition: {
-            item: {
-              uri: '/gdc/md/jm8bsdakbhujk1a254h25a6mtd6orn9g/obj/62827'
-            }
-          }
-        }
-      }
-    };
-    const view = {
-      visualizationAttribute: {
-        displayForm: {
-          uri: '/gdc/md/jm8bsdakbhujk1a254h25a6mtd6orn9g/obj/324'
-        },
-        localIdentifier: '02b7736f6bef48b1849798e430d837df'
-      }};
-    const stack = {
-      visualizationAttribute: {
-      displayForm: {
-        uri: '/gdc/md/jm8bsdakbhujk1a254h25a6mtd6orn9g/obj/952'
-      },
-      localIdentifier: 'bc5257e06a9342ec99854bd1a53f3262'
-    }};
-
-    return (
-      <div className="App">
-        <header className="App-header">
-          <div style={{width: 600, height: 800}}>
-            <Treemap
-              projectId={projectId}
-              measures={[measure]}
-              viewBy={view}
-              segmentBy={stack}
-            />
+      return (
+        <div style={{ height: 367 }}>
+          <div className="App">
+            <header className="App-header">
+              <div style={{width: 600, height: 800}}>
+                <Visualization
+                  projectId={this.projectId}
+                  uri={`/gdc/md/${this.projectId}/obj/${this.visId}`}
+                  // sdk={this.sdk}
+                  onExportReady={this.onExportReady}
+                />
+              </div>
+            </header>
           </div>
-          <div style={{width: 600, height: 800}}>
-            <Visualization projectId={projectId} uri={'/gdc/md/jm8bsdakbhujk1a254h25a6mtd6orn9g/obj/75599'} />
-          </div>
-          <Test />
-        </header>
-      </div>
+            <div style={{ marginTop: 15 }}>
+                <button className="gd-button gd-button-secondary" onClick={this.exportToCSV}>
+                    Export CSV
+                </button>
+
+            </div>
+        </div>
     );
   }
 }
