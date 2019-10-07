@@ -1,5 +1,5 @@
 const proxy = require('http-proxy-middleware');
-const backend = 'secure.gooddata.com';
+const backend = 'frauddashboard-dev.na.gooddata.com';
 
 module.exports = function (app) {
     app.use(proxy("/gdc",  {
